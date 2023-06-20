@@ -1,16 +1,21 @@
 #include <jni.h>
 #include <string>
 
+//推流rtmp
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_zyl_yuvlib_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
+        JNIEnv *env, jobject) {
     std::string hello = "Hello from C++";
     return env->NewStringUTF(hello.c_str());
 }
 
-#include <jni.h>
-//#include "libyuv.h"
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_zyl_yuvlib_MainActivity_pushRTMPStream(
+        JNIEnv *env, jobject, jstring pushUrl, jbyteArray input_) {
+    std::string hello = "Hello from C++";
+    return env->NewStringUTF(hello.c_str());
+}
+
 #include "libyuv/include/libyuv.h"
 #include <cstring>
 #include <android/log.h>
@@ -24,16 +29,16 @@ Java_com_zyl_yuvlib_MainActivity_stringFromJNI(
 using namespace libyuv;
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_zyl_yuvlib_YuvUtils_NV21ToI420(JNIEnv *env, jobject instance, jbyteArray input_,
-                                         jbyteArray output_, jint in_width, jint in_height) {
+Java_com_zyl_yuvlib_util_YuvUtils_NV21ToI420(JNIEnv *env, jclass instance, jbyteArray input_,
+                                             jbyteArray output_, jint in_width, jint in_height) {
     jbyte *srcData = env->GetByteArrayElements(input_, NULL);
     jbyte *dstData = env->GetByteArrayElements(output_, NULL);
 
-    NV21ToI420((const uint8_t *)srcData, in_width,
-               (uint8_t *)srcData + (in_width * in_height), in_width,
-               (uint8_t *)dstData, in_width,
-               (uint8_t *)dstData + (in_width * in_height), in_width / 2,
-               (uint8_t *)dstData + (in_width * in_height * 5 / 4), in_width / 2,
+    NV21ToI420((const uint8_t *) srcData, in_width,
+               (uint8_t *) srcData + (in_width * in_height), in_width,
+               (uint8_t *) dstData, in_width,
+               (uint8_t *) dstData + (in_width * in_height), in_width / 2,
+               (uint8_t *) dstData + (in_width * in_height * 5 / 4), in_width / 2,
                in_width, in_height);
     env->ReleaseByteArrayElements(input_, srcData, 0);
     env->ReleaseByteArrayElements(output_, dstData, 0);
@@ -41,9 +46,9 @@ Java_com_zyl_yuvlib_YuvUtils_NV21ToI420(JNIEnv *env, jobject instance, jbyteArra
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_zyl_yuvlib_YuvUtils_RotateI420(JNIEnv *env, jobject type, jbyteArray input_,
-                                         jbyteArray output_, jint in_width, jint in_height,
-                                         jint rotation) {
+Java_com_zyl_yuvlib_util_YuvUtils_RotateI420(JNIEnv *env, jclass type, jbyteArray input_,
+                                             jbyteArray output_, jint in_width, jint in_height,
+                                             jint rotation) {
     jbyte *srcData = env->GetByteArrayElements(input_, NULL);
     jbyte *dstData = env->GetByteArrayElements(output_, NULL);
 
@@ -60,12 +65,12 @@ Java_com_zyl_yuvlib_YuvUtils_RotateI420(JNIEnv *env, jobject type, jbyteArray in
             rotationMode = kRotate270;
             break;
     }
-    I420Rotate((const uint8_t *)srcData, in_width,
-               (uint8_t *)srcData + (in_width * in_height), in_width / 2,
-               (uint8_t *)srcData + (in_width * in_height * 5 / 4), in_width / 2,
-               (uint8_t *)dstData, in_height,
-               (uint8_t *)dstData + (in_width * in_height), in_height / 2,
-               (uint8_t *)dstData + (in_width * in_height * 5 / 4), in_height / 2,
+    I420Rotate((const uint8_t *) srcData, in_width,
+               (uint8_t *) srcData + (in_width * in_height), in_width / 2,
+               (uint8_t *) srcData + (in_width * in_height * 5 / 4), in_width / 2,
+               (uint8_t *) dstData, in_height,
+               (uint8_t *) dstData + (in_width * in_height), in_height / 2,
+               (uint8_t *) dstData + (in_width * in_height * 5 / 4), in_height / 2,
                in_width, in_height,
                rotationMode);
 
@@ -75,27 +80,27 @@ Java_com_zyl_yuvlib_YuvUtils_RotateI420(JNIEnv *env, jobject type, jbyteArray in
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_zyl_yuvlib_YuvUtils_NV21ToI420andRotate90Clockwise(JNIEnv *env, jobject type,
-                                                             jbyteArray input_,
-                                                             jbyteArray output_,
-                                                             jint in_width, jint in_height) {
+Java_com_zyl_yuvlib_util_YuvUtils_NV21ToI420andRotate90Clockwise(JNIEnv *env, jclass type,
+                                                                 jbyteArray input_,
+                                                                 jbyteArray output_,
+                                                                 jint in_width, jint in_height) {
     jbyte *srcData = env->GetByteArrayElements(input_, NULL);
     jbyte *dstData = env->GetByteArrayElements(output_, NULL);
     jsize size = env->GetArrayLength(input_);
 
     NV21ToI420((const uint8_t *) srcData, in_width,
-               (uint8_t *)srcData + (in_width * in_height), in_width,
-               (uint8_t *)dstData, in_width,
-               (uint8_t *)dstData + (in_width * in_height), in_width / 2,
-               (uint8_t *)dstData + (in_width * in_height * 5 / 4), in_width / 2,
+               (uint8_t *) srcData + (in_width * in_height), in_width,
+               (uint8_t *) dstData, in_width,
+               (uint8_t *) dstData + (in_width * in_height), in_width / 2,
+               (uint8_t *) dstData + (in_width * in_height * 5 / 4), in_width / 2,
                in_width, in_height);
 
-    I420Rotate((const uint8_t *)dstData, in_width,
-               (uint8_t *)dstData + (in_width * in_height), in_width / 2,
-               (uint8_t *)dstData + (in_width * in_height * 5 / 4), in_width / 2,
-               (uint8_t *)srcData, in_height,
-               (uint8_t *)srcData + (in_width * in_height), in_height / 2,
-               (uint8_t *)srcData + (in_width * in_height * 5 / 4), in_height / 2,
+    I420Rotate((const uint8_t *) dstData, in_width,
+               (uint8_t *) dstData + (in_width * in_height), in_width / 2,
+               (uint8_t *) dstData + (in_width * in_height * 5 / 4), in_width / 2,
+               (uint8_t *) srcData, in_height,
+               (uint8_t *) srcData + (in_width * in_height), in_height / 2,
+               (uint8_t *) srcData + (in_width * in_height * 5 / 4), in_height / 2,
                in_width, in_height,
                kRotate90);
     memcpy(dstData, srcData, size);
